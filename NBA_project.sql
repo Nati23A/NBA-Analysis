@@ -118,7 +118,7 @@ CREATE VIEW top10_pts AS
 	FROM (SELECT *,
 		ROW_NUMBER() OVER (PARTITION BY season ORDER BY pts DESC) AS rnk
 		FROM nba_players) AS ldr_pts
-	WHERE ldr_pts.rnk <11
+	WHERE ldr_pts.rnk <11;
 
 
 -- 3. TOP 10 league leaders by season - assist
@@ -127,7 +127,7 @@ CREATE VIEW top10_ast AS
 	FROM (SELECT *,
 		ROW_NUMBER() OVER (PARTITION BY season ORDER BY ast DESC) AS rnk
 		FROM nba_players) AS ldr_pts
-	WHERE ldr_pts.rnk <11
+	WHERE ldr_pts.rnk <11;
 
 
 -- 4. TOP 10 league leaders by season - rebounds
@@ -136,7 +136,7 @@ CREATE VIEW top10_reb AS
 	FROM (SELECT *,
 		ROW_NUMBER() OVER (PARTITION BY season ORDER BY reb DESC) AS rnk
 		FROM nba_players) AS ldr_pts
-	WHERE ldr_pts.rnk <11
+	WHERE ldr_pts.rnk <11;
 
 
 -- 5. NBA Draft picks overview
