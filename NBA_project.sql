@@ -15,19 +15,21 @@ WHERE college != 'None'
 GROUP BY college ORDER BY player_count DESC;
 
 
--- 3. Does the NBA draft more/less players over the years
-SELECT draft_year, COUNT(DISTINCT player_name) AS player_count
-FROM plr_info 
-WHERE draft_year != 'Undrafted'
-GROUP BY draft_year ORDER BY draft_year ASC;
-
-
--- 4. What teams had the most top 10 picks in the draft
+-- 3. What teams had the most top 10 picks in the draft
 SELECT team_abbreviation, 
 	COUNT(DISTINCT player_name) AS top10_picks
 FROM plr_info 
 WHERE draft_round = '1' AND draft_number BETWEEN '1' AND '10'
 GROUP BY team_abbreviation ORDER BY top10_picks DESC;
+
+
+-- 4. How many get drafted every year and what is their average height
+SELECT draft_year,
+	COUNT(DISTINCT player_name) AS player_count,
+	ROUND(AVG(player_height),2) AS player_avg_height
+FROM plr_info 
+WHERE draft_number != 'Undrafted'
+GROUP BY draft_year ORDER BY draft_year;
 
 
 -- 5. Do players of certain height get drafted more often
@@ -42,17 +44,10 @@ AS (
 	)
 SELECT player_height_range, drafted_players, 
 	ROUND((drafted_players /player_count)*100 ,2) AS drafted_percent
-FROM height_cnt
+FROM height_cnt;
 
 
--- 6. Does this height perference in the draft changed over time
-SELECT draft_year, ROUND(AVG(player_height),2) AS player_avg_height
-FROM plr_info 
-WHERE draft_number != 'Undrafted'
-GROUP BY draft_year ORDER BY draft_year;
-
-
--- 7. Did the average player got better over time
+-- 6. Did the average player got better over time
 SELECT pi.season, 
 	ROUND(AVG(ps.pts), 2) AS average_points, 
 	ROUND(AVG(ps.ast), 2) AS average_assist, 
@@ -63,18 +58,18 @@ ON pi."#" = ps."#"
 GROUP BY pi.season ORDER BY pi.season;
 
 
--- 8. What team had the best player averages
-SELECT DISTINCT pi.team_abbreviation, 
-	ROUND(AVG(ps.pts) OVER (PARTITION BY pi.team_abbreviation), 2) AS points_avg, 
-	ROUND(AVG(ps.ast) OVER (PARTITION BY pi.team_abbreviation), 2) AS assists_avg, 
-	ROUND(AVG(ps.reb) OVER (PARTITION BY pi.team_abbreviation), 2) AS rebound_avg
+-- 7. What team had the best player averages
+SELECT DISTINCT pi.season ,pi.team_abbreviation, 
+	ROUND(AVG(ps.pts) OVER (PARTITION BY pi.season, pi.team_abbreviation), 2) AS points_avg, 
+	ROUND(AVG(ps.ast) OVER (PARTITION BY pi.season, pi.team_abbreviation), 2) AS assists_avg, 
+	ROUND(AVG(ps.reb) OVER (PARTITION BY pi.season, pi.team_abbreviation), 2) AS rebound_avg
 FROM plr_info AS pi 
 JOIN plr_stats AS ps
 ON pi."#" = ps."#"
-ORDER BY pi.team_abbreviation ASC;
+ORDER BY points_avg DESC, assists_avg DESC, rebound_avg DESC;
 
 
--- 9. Does players height affect their stats
+-- 8. Does players height affect their stats
 SELECT CAST(pi.player_height - (pi.player_height % 10) AS int) AS player_height_range,
 	ROUND(AVG(ps.pts),2) AS points_avg, 
 	ROUND(AVG(ps.ast),2) AS assists_avg, 	
@@ -88,7 +83,7 @@ ON pi."#" = ps."#"
 GROUP BY player_height_range ORDER BY player_height_range ASC;
 
 
--- 10. Does players age affect their stats
+-- 9. Does players age affect their stats
 SELECT pi.age,
 	ROUND(AVG(ps.pts),2) AS points_avg, 
 	ROUND(AVG(ps.ast),2) AS assists_avg, 	
@@ -105,7 +100,7 @@ GROUP BY pi.age ORDER BY pi.age ASC;
 Create views for Tableau Public visualizations
 */
 
--- Players info & stats table
+-- 1. Players info & stats table
 CREATE VIEW nba_players AS
 	SELECT pi.season, pi.team_abbreviation, pi.player_name, pi.age, pi.player_height, pi.player_weight,
 		pi.country, pi.college, pi.draft_year, pi.draft_round, pi.draft_number,
@@ -114,10 +109,46 @@ CREATE VIEW nba_players AS
 	FROM plr_info AS pi
 	JOIN plr_stats AS ps
 	ON ps."#" = pi."#"
-	ORDER BY 1,2,3
+	ORDER BY 1,2,3;
 
 
--- Lebron James's career view
+-- 2. TOP 10 league leaders by season - points
+CREATE VIEW top10_pts AS
+	SELECT * 
+	FROM (SELECT *,
+		ROW_NUMBER() OVER (PARTITION BY season ORDER BY pts DESC) AS rnk
+		FROM nba_players) AS ldr_pts
+	WHERE ldr_pts.rnk <11
+
+
+-- 3. TOP 10 league leaders by season - assist
+CREATE VIEW top10_ast AS
+	SELECT * 
+	FROM (SELECT *,
+		ROW_NUMBER() OVER (PARTITION BY season ORDER BY ast DESC) AS rnk
+		FROM nba_players) AS ldr_pts
+	WHERE ldr_pts.rnk <11
+
+
+-- 4. TOP 10 league leaders by season - rebounds
+CREATE VIEW top10_reb AS
+	SELECT * 
+	FROM (SELECT *,
+		ROW_NUMBER() OVER (PARTITION BY season ORDER BY reb DESC) AS rnk
+		FROM nba_players) AS ldr_pts
+	WHERE ldr_pts.rnk <11
+
+
+-- 5. NBA Draft picks overview
+CREATE VIEW draft_overview AS
+	SELECT *
+	FROM nba_players
+	WHERE draft_number != 'Undrafted' 
+		AND draft_year = LEFT(season, 4)
+	ORDER BY season, CAST(draft_number AS int) ASC;
+
+
+-- 6. Lebron James's career view
 CREATE VIEW lebronjames_career AS
 	SELECT pi.season, pi.team_abbreviation, pi.age, 
 		ps.gp, ps.pts, ps.ts_pct, 
@@ -127,4 +158,4 @@ CREATE VIEW lebronjames_career AS
 	FROM plr_info AS pi 
 	JOIN plr_stats AS ps
 	ON pi."#" = ps."#"
-	WHERE pi.player_name LIKE 'LeBron%'
+	WHERE pi.player_name LIKE 'LeBron%';
