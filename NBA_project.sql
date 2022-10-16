@@ -112,7 +112,7 @@ CREATE VIEW nba_players AS
 	ORDER BY 1,2,3;
 
 
--- 2. TOP 10 league leaders by season - points
+-- 2. TOP 10 league leaders by season - Points
 CREATE VIEW top10_pts AS
 	SELECT * 
 	FROM (SELECT *,
@@ -121,7 +121,7 @@ CREATE VIEW top10_pts AS
 	WHERE ldr_pts.rnk <11;
 
 
--- 3. TOP 10 league leaders by season - assist
+-- 3. TOP 10 league leaders by season - Assist
 CREATE VIEW top10_ast AS
 	SELECT * 
 	FROM (SELECT *,
@@ -130,7 +130,7 @@ CREATE VIEW top10_ast AS
 	WHERE ldr_pts.rnk <11;
 
 
--- 4. TOP 10 league leaders by season - rebounds
+-- 4. TOP 10 league leaders by season - Rebounds
 CREATE VIEW top10_reb AS
 	SELECT * 
 	FROM (SELECT *,
