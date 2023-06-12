@@ -11,7 +11,7 @@ I used SQL queries to answer questions concerning the NBA players such as:
 And more
 
 ## Links
-#### KAggle - NBA Players Dataset
+#### Kaggle - NBA Players Dataset
 https://www.kaggle.com/datasets/justinas/nba-players-data
 
 #### My Tableau Visualiztion 
