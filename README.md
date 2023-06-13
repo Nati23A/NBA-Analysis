@@ -1,5 +1,4 @@
-![NBA_Analysis](https://github.com/Nati23A/NBA-Analysis/assets/95759921/61cfc97a-fe7c-4fab-b8a1-b7143a8e1869)
-
+![tr_nba](https://github.com/Nati23A/NBA-Analysis/assets/95759921/f308bf6c-d70a-4f8c-832f-6e94ba67830c)
 ## Project's Goal
 Exploring a NBA dataset (containing player names, info &amp; stats from 96'-97' season to 21'-22' season) with SQL queries and visualizing SQL views with Tableau Public.
 
